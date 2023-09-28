@@ -1,3 +1,8 @@
+---
+layout: post
+title: PowerShell vs Python for Azure Scripting
+---
+
 # PowerShell vs Python for Azure Scripting
 
 ## Introduction
