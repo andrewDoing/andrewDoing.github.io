@@ -7,7 +7,7 @@ title: "Start Simple, Scale Fast: Azure Storage for Distributed Computing"
 
 ## Introduction
 
-Have you ever needed to create a distributed system? Maybe you want the performance of splitting your workload across many container instances. Or maybe you need to ensure resiliency if any of those instances fatally crash. In any case, there are many solutions on Azure for accomplishing your scalability and resiliency goals for your system. Azure Storage Accounts are one of the simplest resources on Azure, but simultaneously one of the most useful, and reused building blocks across the Microsoft Cloud ecosystem. Blobs, leases, and queues are fundamental components that enable powerful patterns. Let's dig into why you should have Storage Accounts ready to go in your Azure toolbelt.
+Have you ever needed to create a distributed system? Maybe you want the performance of splitting your workload across many container instances. Or maybe you need to ensure resiliency if any of those instances fatally crash. In any case, there are many solutions on Azure for accomplishing your scalability and resiliency goals for your system. Azure Storage Accounts are one of the simplest resources on Azure, but simultaneously one of the most useful, and reused building blocks across the Microsoft Cloud ecosystem. Blobs, leases, and queues are fundamental components that enable powerful patterns. Let's dig into why you should have Storage Accounts ready to go in your Azure toolkit.
 
 ## Provisioning your Storage Account
 
@@ -51,7 +51,7 @@ Using a distributed mutex enables you to accomplish multiple patterns within a d
 
 Multiple processes can safely write to the same append blob, making it a nice data sink.
 It's good to know though that append blobs are limited to 50,000 blocks, AKA 50,000 writes, since each write is a block.
-The data is generally orderd in a first-in, first-out way, but if multiple processes are writing as soon as they can, the data will be unordered.
+The data is generally ordered in a first-in, first-out way, but if multiple processes are writing as soon as they can, the data will be unordered.
 
 Some example scenarios for append blobs include the following:
 - Log Files: Writing logs out to append blobs in batches for archival.
@@ -65,15 +65,15 @@ Both Standard and Premium Storage Account SKUs support Azure Queue Storage.
 Within the Storage Account, each queue needs a unique name. [Naming Queues and Metadata](https://learn.microsoft.com/en-us/rest/api/storageservices/naming-queues-and-metadata)
 
 There are many use-cases for a distributed queue, but here's a simple one: distributing work items across many compute instances. Simply load the messages into the queue, and then have the processes consume those messages. There are some key benefits to this approach:
-- Resilience: If a message fails to process, it will re-appear in the queue after a time. The number of times this can occur is configurable. Additionally, deadletter queues should be used, and are described in the section below.
+- Resilience: If a message fails to process, it will re-appear in the queue after a time. The number of times this can occur is configurable. Additionally, dead-letter queues should be used, and are described in the section below.
 - Greedy Processes: Each instance can get more work as it finishes work, and the queue prevent race conditions for dequeueing messages
 
-### Deadletter Queues
-Deadletter queues are for collecting messages that can't be processed, or failed in a system (after some number of retries) for some reason.
+### Dead-letter Queues
+Dead-letter queues are for collecting messages that can't be processed, or failed in a system (after some number of retries) for some reason.
 Although Queue Storage doesn't support dead-letter queues out of the box, they can still be implemented by the services that are using the queue.
-Simply create a `x-deadletter` queue, and write the logic for sending messages there. Be advised that the default message retention for a queue is 7 days.
+Simply create a `x-dead-letter` queue, and write the logic for sending messages there. Be advised that the default message retention for a queue is 7 days.
 
-Deadletter queues are useful for detecting issues with your system. Sometimes the message itself is a problem, but more often a piece of the system has failed, failing the message.
+Dead-letter queues are useful for detecting issues with your system. Sometimes the message itself is a problem, but more often a piece of the system has failed, failing the message.
 
 ### Need more performance?
 Storage Queue may not have enough performance or lack the features to suit your requirements. In that case, take a look at Service Bus queues.
@@ -83,18 +83,18 @@ Storage Queue may not have enough performance or lack the features to suit your 
 
 Consider a two-stage workload. Generation of synthetic data, and Ingestion of that data into another system.
 
-![Generator-Ingestor Architecture](../images/generator-ingestor-architecture.png)
+![Generator-Ingester Architecture](assets/generator-ingester-architecture.png)
 
 The generation work can be segmented into work units, and defined as queue messages that generator processes receive and do work on.
 
 The ingestion work likewise can be segmented into work units, and references the generated data using the message.
 
-Append blobs come into play here as well. As the generator generates data, and as the ingestor ingests, they can append metadata like IDs to a file, which can later be used to reference that data in the downstream system.
+Append blobs come into play here as well. As the generator generates data, and as the ingester ingests, they can append metadata like IDs to a file, which can later be used to reference that data in the downstream system.
 
 Using queues for both stages of the workload enables the following benefits:
 - Distributed work across many workers
 - Resilience to failures
-- Introspection into the system via Blob storage, and the queues themselves (including manually created deadletter queues)
+- Introspection into the system via Blob storage, and the queues themselves (including manually created dead-letter queues)
 
 ## Example 2: Blob Leases for Rate-Limiting
 
@@ -104,14 +104,14 @@ Distributing the limited resources among many processes is a good way to scale t
 
 Blob leases can be used to represent the limited resources, and then distributed to the processes. The processes lease the blobs, and then release them when they are done. If a process fails, the blob will be released after a time, and can be leased by another process.
 
-![Blob Lease Rate Limiting](../images/rate-limiting-pattern-03.png)
+![Blob Lease Rate Limiting](assets/rate-limiting-pattern-03.png)
 
 [Rate Limiting Cloud Design Pattern: Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/patterns/rate-limiting-pattern)
 
 ## Key Takeaways
 - Azure Storage Accounts: A foundational resource for building scalable and resilient distributed systems. The versatility of Storage Accounts makes them a crucial tool in your Azure toolkit.
 
-- Blob Storage: Useful for handling unstructured data and comes in three types: Block blobs, Page blobs, and Append blobs. Each type is optimized for specific use-cases, from efficiently uploading large files, to serving as the backend storage for VMs, to effienctly appending data to a single blob.
+- Blob Storage: Useful for handling unstructured data and comes in three types: Block blobs, Page blobs, and Append blobs. Each type is optimized for specific use-cases, from efficiently uploading large files, to serving as the backend storage for VMs, to efficienctly appending data to a single blob.
 
 - Distributed Mutex via Blob Leasing: Azure Blobs can be leased for exclusive write access, enabling the implementation of distributed mutexes for resource coordination, leader election, and safeguarding shared data.
 
@@ -119,7 +119,7 @@ Blob leases can be used to represent the limited resources, and then distributed
 
 - Queue Storage: An efficient way to distribute work across multiple compute instances. Although unaffected by the Storage Account SKU, Queue Storage's performance may not meet all use-case requirements.
 
-- Deadletter Queues: While not a native feature of Azure Queue Storage, deadletter queues can be manually implemented to handle messages that fail to process after a certain number of attempts.
+- Dead-letter Queues: While not a native feature of Azure Queue Storage, dead-letter queues can be manually implemented to handle messages that fail to process after a certain number of attempts.
 
 - Premium vs Standard Storage Accounts: Premium Storage Accounts provide higher performance but at a greater cost. Choose the SKU based on your application's specific needs.
 
