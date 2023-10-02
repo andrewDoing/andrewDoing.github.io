@@ -13,9 +13,7 @@ Have you ever needed to create a distributed system? Maybe you want the performa
 
 The Storage Account resource contains multiple utilities, including Blob Storage and Queue Storage. There are other facets, such as File Shares and Tables that are outside of the scope of this article.
 
-There are two SKUs
-- Standard
-- Premium
+There are two SKUs, Standard and Premium.
 
 Standard should be your default choice, however you may need Premium depending on your use-case.
 Premium storage accounts leverage SSDs (Solid State Drives) which provide faster read and write performance than traditional Hard Drives.
